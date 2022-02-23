@@ -3,6 +3,8 @@ import random
 import string
 from requests import Response
 from datetime import datetime
+from lib.assertions import Assertions
+from lib.my_requests import MyRequests
 
 
 class BaseCase:
@@ -45,4 +47,26 @@ class BaseCase:
             "firstName": "learnqa",
             "lastName": "learnqa",
             "email": email
+        }
+
+    def register_user(self, url, data):
+        response = MyRequests.post(url, data=data)
+
+        Assertions.asser_code_status(response, 200)
+        Assertions.assert_json_has_key(response, "id")
+
+        user_id = self.get_json_value(response, "id")
+        return user_id
+
+    def login_user(self, url, login_data):
+        response = MyRequests.post(url, data=login_data)
+
+        Assertions.asser_code_status(response, 200)
+
+        auth_sid = self.get_cookie(response, "auth_sid")
+        token = self.get_header(response, "x-csrf-token")
+
+        return {
+            "headers": {"x-csrf-token": token},
+            "cookies": {"auth_sid": auth_sid}
         }
