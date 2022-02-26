@@ -29,7 +29,7 @@ class BaseCase:
     def generate_email(self):
         base_part = "learnqa"
         domain = "example.com"
-        random_part = datetime.now().strftime("%m%d%Y%H%M%S")
+        random_part = datetime.now().strftime("%m%d%Y%H%M%S%f")
         return f"{base_part}{random_part}@{domain}"
 
     def generate_username(self, length: int):
