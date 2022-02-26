@@ -1,13 +1,15 @@
 import pytest
-import requests
+import allure
 from lib.assertions import Assertions
 from lib.base_case import BaseCase
 from lib.my_requests import MyRequests
 
 
+@allure.epic("Authorization cases")
 class TestUserAuth(BaseCase):
     exclude_params = [("no_cookie"), ("no_token ")]
 
+    @allure.step("Setup user data for login")
     def setup(self):
         data = {
             'email': 'vinkotov@example.com',
@@ -20,8 +22,9 @@ class TestUserAuth(BaseCase):
         self.token = self.get_header(response, "x-csrf-token")
         self.user_id_from_auth_method = self.get_json_value(response, "user_id")
 
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description("This test successfully authorize user by email and password")
     def test_auth_user(self):
-
         response = MyRequests.get(
             "/user/auth",
             headers={"x-csrf-token": self.token},
@@ -35,11 +38,14 @@ class TestUserAuth(BaseCase):
             "User id from auth method is not equal to user id from check method"
         )
 
+    @allure.description("This test checks authorization status w/o sending auth cookie or token")
     @pytest.mark.parametrize('condition', exclude_params)
     def test_negative_auth_check(self, condition):
         if condition == "no_cookie":
+            allure.dynamic.description(f"This test checks authorization status w/o sending auth cookie")
             response = MyRequests.get("/user/auth", headers={"x-csrf-token": self.token})
         else:
+            allure.dynamic.description(f"This test checks authorization status w/o sending token")
             response = MyRequests.get("/user/auth", cookies={"auth_sid": self.auth_sid})
 
         Assertions.assert_json_value_by_name(
